@@ -2,6 +2,7 @@ use cosmwasm_std::{DepsMut, MessageInfo, Response, StdResult};
 use crate::InstantiateMsg;
 use crate::state::{COUNTER, MINIMAL_DONATION, OWNER};
 
+#[allow(dead_code)]
 pub fn instantiate(deps: DepsMut, info: MessageInfo, msg: InstantiateMsg) -> StdResult<Response> {
     COUNTER.save(deps.storage, &msg.counter)?;
     MINIMAL_DONATION.save(deps.storage, &msg.minimal_donation)?;
@@ -25,7 +26,8 @@ pub mod query {
 }
 
 pub mod exec {
-    use cosmwasm_std::{BankMsg, DepsMut, Env, MessageInfo, Response, StdError, StdResult};
+    use cosmwasm_std::{BankMsg, DepsMut, Env, MessageInfo, Response, StdResult};
+    use crate::error::ContractError;
     use crate::state::{COUNTER, MINIMAL_DONATION, OWNER};
 
     pub fn donate(deps: DepsMut, info: MessageInfo) -> StdResult<Response> {
@@ -57,10 +59,10 @@ pub mod exec {
         Ok(resp)
     }
 
-    pub fn withdraw(deps: DepsMut, env: Env, info: MessageInfo) -> StdResult<Response> {
+    pub fn withdraw<ContractErrore>(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, ContractError> {
         let owner = OWNER.load(deps.storage)?;
         if info.sender != owner {
-            return Err(StdError::generic_err("Unauthorized"));
+            return Err(ContractError::Unauthorized { owner: owner.into()});
         }
 
         let funds = deps.querier.query_all_balances(&env.contract.address)?;
