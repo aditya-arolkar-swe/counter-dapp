@@ -1,18 +1,23 @@
-use cosmwasm_std::{DepsMut, Env, MessageInfo, Response, StdResult, entry_point, Binary, Deps, to_binary};
+#[cfg(not(feature = "library"))]
+use cosmwasm_std::entry_point;
+
+use cosmwasm_std::{DepsMut, Env, MessageInfo, Response, StdResult, Binary, Deps, to_binary};
 use crate::error::ContractError;
 use crate::msg::{ExecMsg, InstantiateMsg};
 mod contract;
 pub mod msg;
 mod state;
 pub mod error;
+#[cfg(any(test, feature = "tests"))]
+pub mod multitest;
 
 #[allow(dead_code)]
-#[entry_point]
+#[cfg_attr(not(feature = "library"), entry_point)]
 fn instantiate(deps: DepsMut, _env: Env, info: MessageInfo, msg: InstantiateMsg) -> StdResult<Response> {
     contract::instantiate(deps, info, msg)
 }
 
-#[entry_point]
+#[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, _env: Env, msg: msg::QueryMsg) -> StdResult<Binary> {
     use msg::QueryMsg::*;
     use contract::query;
@@ -23,7 +28,7 @@ pub fn query(deps: Deps, _env: Env, msg: msg::QueryMsg) -> StdResult<Binary> {
     }
 }
 
-#[entry_point]
+#[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: msg::ExecMsg) -> Result<Response, ContractError> {
     match msg {
         ExecMsg::Donate {} => contract::exec::donate(deps, info).map_err(ContractError::from),
