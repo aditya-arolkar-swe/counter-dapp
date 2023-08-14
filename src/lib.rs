@@ -1,7 +1,7 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 
-use cosmwasm_std::{DepsMut, Env, MessageInfo, Response, StdResult, Binary, Deps, to_binary};
+use cosmwasm_std::{DepsMut, Env, MessageInfo, Response, StdResult, Binary, Deps, to_binary, Empty};
 use crate::error::ContractError;
 use crate::msg::{ExecMsg, InstantiateMsg};
 mod contract;
@@ -31,11 +31,16 @@ pub fn query(deps: Deps, _env: Env, msg: msg::QueryMsg) -> StdResult<Binary> {
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: msg::ExecMsg) -> Result<Response, ContractError> {
     match msg {
-        ExecMsg::Donate {} => contract::exec::donate(deps, info).map_err(ContractError::from),
-        ExecMsg::Reset { counter } => contract::exec::reset(deps, info, counter).map_err(ContractError::from),
-        ExecMsg::Withdraw {} => contract::exec::withdraw::<ContractError>(deps, env, info),
+        ExecMsg::Donate {} => contract::exec::donate(deps, info).map_err(ContractError::Std),
+        ExecMsg::Reset { counter } => contract::exec::reset(deps, info, counter).map_err(ContractError::Std),
+        ExecMsg::Withdraw {} => contract::exec::withdraw(deps, env, info),
     }?;
     Ok(Response::new())
+}
+
+#[cfg_attr(not(feature = "library"), entry_point)]
+pub fn migrate(deps: DepsMut, _env: Env, _msg: Empty) -> StdResult<Response> {
+    contract::migrate(deps)
 }
 
 #[cfg(test)]

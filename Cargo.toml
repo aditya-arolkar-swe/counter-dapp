@@ -1,6 +1,6 @@
 [package]
 name = "counting-contract"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 
 [lib]
@@ -19,8 +19,9 @@ cw-storage-plus = "0.14.0"
 thiserror = "1.0.0"
 schemars = "0.8"
 cosmwasm-schema = "1.1"
-cw-multi-test = { version = "0.14.0", optional = true }
+cw-multi-test = { version = "0.15.0", optional = true }
 
 
 [dev-dependencies]
 cw-multi-test = "0.15.0"
+counting-contract_0_1_0 = { package = "counting-contract", version = "0.1.0", path = "../counting-contract", features = ["tests"]}
