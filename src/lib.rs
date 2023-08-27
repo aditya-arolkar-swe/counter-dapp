@@ -39,7 +39,7 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: msg::ExecMsg) ->
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn migrate(deps: DepsMut, _env: Env, _msg: Empty) -> StdResult<Response> {
+pub fn migrate(deps: DepsMut, _env: Env, _msg: Empty) -> Result<Response, ContractError> {
     contract::migrate(deps)
 }
 
