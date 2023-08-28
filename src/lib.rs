@@ -3,7 +3,7 @@ use cosmwasm_std::entry_point;
 
 use cosmwasm_std::{DepsMut, Env, MessageInfo, Response, StdResult, Binary, Deps, to_binary, Empty};
 use crate::error::ContractError;
-use crate::msg::{ExecMsg, InstantiateMsg};
+use crate::msg::{ExecMsg, InstantiateMsg, MigrateMsg};
 mod contract;
 pub mod msg;
 mod state;
@@ -31,7 +31,7 @@ pub fn query(deps: Deps, _env: Env, msg: msg::QueryMsg) -> StdResult<Binary> {
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: msg::ExecMsg) -> Result<Response, ContractError> {
     match msg {
-        ExecMsg::Donate {} => contract::exec::donate(deps, info).map_err(ContractError::Std),
+        ExecMsg::Donate {} => contract::exec::donate(deps, env, info).map_err(ContractError::Std),
         ExecMsg::Reset { counter } => contract::exec::reset(deps, info, counter).map_err(ContractError::Std),
         ExecMsg::Withdraw {} => contract::exec::withdraw(deps, env, info),
     }?;
@@ -39,8 +39,8 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: msg::ExecMsg) ->
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn migrate(deps: DepsMut, _env: Env, _msg: Empty) -> Result<Response, ContractError> {
-    contract::migrate(deps)
+pub fn migrate(deps: DepsMut, _env: Env, msg: MigrateMsg) -> Result<Response, ContractError> {
+    contract::migrate(deps, msg)
 }
 
 #[cfg(test)]
@@ -68,7 +68,7 @@ mod test {
         let contract_addr = app.instantiate_contract(
             contract_id,
             Addr::unchecked("sender"),
-            &InstantiateMsg { counter: 20 , minimal_donation: Coin::new(10, ATOM) },
+            &InstantiateMsg { counter: 20 , minimal_donation: Coin::new(10, ATOM), parent: None },
             &[],
             "Counting contract",
             None
@@ -92,7 +92,7 @@ mod test {
         let contract_addr = app.instantiate_contract(
             contract_id,
             sender.clone(),
-            &InstantiateMsg { counter: 0, minimal_donation: Coin::new(10, ATOM) },
+            &InstantiateMsg { counter: 0, minimal_donation: Coin::new(10, ATOM), parent: None },
             &[],
             "Counting contract",
             None
@@ -169,6 +169,7 @@ mod test {
                 &InstantiateMsg {
                     counter: 0,
                     minimal_donation: Coin::new(0, ATOM),
+                    parent: None
                 },
                 &[],
                 "Counting contract",
@@ -201,7 +202,7 @@ mod test {
         let contract_addr = app.instantiate_contract(
             contract_id,
             Addr::unchecked("sender"),
-            &InstantiateMsg { counter: 0, minimal_donation: Coin::new(10, ATOM) },
+            &InstantiateMsg { counter: 0, minimal_donation: Coin::new(10, ATOM), parent: None },
             &[],
             "Counting contract",
             None
@@ -227,7 +228,7 @@ mod test {
         let contract_addr = app.instantiate_contract(
             contract_id,
             Addr::unchecked("sender"),
-            &InstantiateMsg { counter: 0, minimal_donation: Coin::new(10, ATOM) },
+            &InstantiateMsg { counter: 0, minimal_donation: Coin::new(10, ATOM), parent: None },
             &[],
             "Counting contract",
             None
@@ -311,6 +312,7 @@ mod test {
                 &InstantiateMsg {
                     counter: 0,
                     minimal_donation: coin(10, "atom"),
+                    parent: None
                 },
                 &[],
                 "Counting contract",

@@ -3,7 +3,7 @@ mod tests;
 use cosmwasm_std::{Addr, Coin, Empty, StdError, StdResult};
 use cw_multi_test::{App, ContractWrapper, Executor};
 use crate::error::ContractError;
-use crate::msg::{ValueResp, InstantiateMsg, QueryMsg, ExecMsg};
+use crate::msg::{ValueResp, InstantiateMsg, QueryMsg, ExecMsg, Parent, MigrateMsg};
 use crate::{execute, query, instantiate, migrate};
 
 pub struct CountingContract(Addr);
@@ -20,11 +20,11 @@ impl CountingContract {
 
     #[track_caller]
     pub fn instantiate(app: &mut App, code_id: u64, sender: &Addr, admin: Option<&Addr>, label: &str,
-                       minimal_donation: Coin ) -> StdResult<CountingContract> {
+                       minimal_donation: Coin, parent: Option<Parent>) -> StdResult<CountingContract> {
         app.instantiate_contract(
             code_id,
             sender.clone(),
-            &InstantiateMsg { counter: 1, minimal_donation },
+            &InstantiateMsg { counter: 1, minimal_donation, parent },
             &[],
             label,
             admin.map(Addr::to_string)
@@ -32,11 +32,11 @@ impl CountingContract {
     }
 
     #[track_caller]
-    pub fn migrate(app: &mut App, sender: &Addr, contract: &Addr, code_id: u64) -> StdResult<Self> {
+    pub fn migrate(app: &mut App, sender: &Addr, contract: &Addr, code_id: u64, parent: Option<Parent>) -> StdResult<Self> {
         app.migrate_contract(
             sender.clone(),
             contract.clone(),
-            &Empty {},
+            &MigrateMsg { parent },
             code_id
         ).map_err(|err| err.downcast::<StdError>().unwrap())?;
 
